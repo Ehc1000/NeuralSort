@@ -1,0 +1,11 @@
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  assetsInclude: ['**/*.wasm'],
+  server: {
+    fs: {
+      // Allow serving files from one level up to the project root
+      allow: ['..']
+    }
+  }
+})

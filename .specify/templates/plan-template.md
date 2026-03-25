@@ -31,7 +31,10 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **Privacy**: Design MUST ensure 100% local processing (no unauthorized external calls).
+- [ ] **Performance**: Image rendering MUST use lazy loading and virtualization.
+- [ ] **ML Reliability**: ML features MUST include automated accuracy and bias benchmark tasks.
+- [ ] **Accessibility**: Drag-and-drop interactions MUST be WCAG 2.1 Level AA compliant.
 
 ## Project Structure
 

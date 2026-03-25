@@ -77,10 +77,7 @@
 
 ## Requirements *(mandatory)*
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
+> **Constitution Alignment**: Ensure requirements adhere to Core Principles: Privacy (Local Processing), Performance (Lazy Loading), ML Reliability (Strict Testing), and Accessibility (WCAG 2.1 AA).
 
 ### Functional Requirements
 
