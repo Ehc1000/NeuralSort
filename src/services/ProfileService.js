@@ -47,6 +47,12 @@ const ProfileService = {
     return profileId;
   },
 
+  deleteProfile(id) {
+    const db = DatabaseService.getDb();
+    db.run('DELETE FROM ProfileTrainingPhotos WHERE profile_id = ?', [id]);
+    db.run('DELETE FROM StyleProfiles WHERE id = ?', [id]);
+  },
+
   getProfiles() {
     const db = DatabaseService.getDb();
     const result = db.exec('SELECT * FROM StyleProfiles');

@@ -21,8 +21,11 @@ export function renderAlbumCard(album, photos) {
 
   card.innerHTML = `
     ${previewHtml}
-    <h3 style="margin: 10px 0 5px; font-size: 16px;">${album.title}</h3>
-    <p style="margin: 0; font-size: 12px; color: #666;">${photos.length} photos</p>
+    <div style="position: relative;">
+      <h3 style="margin: 10px 0 5px; font-size: 16px;">${album.title}</h3>
+      <p style="margin: 0; font-size: 12px; color: #666;">${photos.length} photos</p>
+      <button class="btn-delete-album" style="position: absolute; top: 0; right: 0; background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px;" title="Delete Album">×</button>
+    </div>
   `;
 
   return card;

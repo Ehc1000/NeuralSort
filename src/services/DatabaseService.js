@@ -70,6 +70,21 @@ const DatabaseService = {
   // Helper to convert BLOB back to Float32Array
   blobToVector(blob) {
     return new Float32Array(blob.buffer);
+  },
+
+  clearAll() {
+    db.run('DELETE FROM ProfileTrainingPhotos');
+    db.run('DELETE FROM StyleProfiles');
+    db.run('DELETE FROM Photos');
+    db.run('DELETE FROM Albums');
+    console.log('Database cleared.');
+  },
+
+  deleteAlbum(albumId) {
+    db.run('DELETE FROM ProfileTrainingPhotos WHERE photo_id IN (SELECT id FROM Photos WHERE album_id = ?)', [albumId]);
+    db.run('DELETE FROM Photos WHERE album_id = ?', [albumId]);
+    db.run('DELETE FROM Albums WHERE id = ?', [albumId]);
+    console.log(`Album ${albumId} and its photos deleted.`);
   }
 };
 

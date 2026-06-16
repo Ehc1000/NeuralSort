@@ -92,27 +92,36 @@ function refreshStore() {
 }
 
 function render() {
-  const { albums, photosByAlbumId, styleProfiles, activeProfile, matchingSuggestions, photos } = Store.getState();
+  const { albums, photosByAlbumId, styleProfiles, activeProfile, matchingSuggestions, photos, searchQuery } = Store.getState();
   
   // Header / Controls
   let controls = document.getElementById('app-controls');
   if (!controls) {
     controls = document.createElement('div');
     controls.id = 'app-controls';
-    controls.style.cssText = 'padding: 20px; background: #eee; border-bottom: 1px solid #ccc; display: flex; align-items: center; gap: 20px;';
+    controls.style.cssText = 'padding: 20px; background: #eee; border-bottom: 1px solid #ccc; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;';
     appRoot.before(controls);
   }
 
   controls.innerHTML = `
-    <button id="btn-import" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Import Photos</button>
-    <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
-    <button id="btn-train" style="padding: 8px 16px;">Train New Style</button>
+    <div style="display: flex; gap: 10px;">
+      <button id="btn-import" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Import Photos</button>
+      <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+      <button id="btn-train" style="padding: 8px 16px;">Train New Style</button>
+      <button id="btn-reset" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Reset DB</button>
+    </div>
+    
     <div style="display: flex; align-items: center; gap: 10px;">
-      <label for="profile-select">Active Style:</label>
-      <select id="profile-select">
+      <label for="profile-select">Style:</label>
+      <select id="profile-select" style="padding: 6px;">
         <option value="">None</option>
         ${styleProfiles.map(p => `<option value="${p.id}" ${activeProfile?.id === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
       </select>
+      ${activeProfile ? '<button id="btn-delete-profile" style="color: red; border: none; background: none; cursor: pointer; font-size: 18px;" title="Delete Profile">×</button>' : ''}
+    </div>
+
+    <div style="flex-grow: 1; display: flex; justify-content: flex-end;">
+      <input type="text" id="search-input" placeholder="Search albums..." value="${searchQuery}" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
     </div>
   `;
 
@@ -136,6 +145,26 @@ function render() {
       announce(`Profile "${name}" created.`);
     });
   };
+
+  controls.querySelector('#btn-reset').onclick = () => {
+    if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+      DatabaseService.clearAll();
+      refreshStore();
+      announce('Database cleared.');
+    }
+  };
+
+  const deleteBtn = controls.querySelector('#btn-delete-profile');
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      if (confirm(`Delete profile "${activeProfile.name}"?`)) {
+        ProfileService.deleteProfile(activeProfile.id);
+        Store.setState({ activeProfile: null, matchingSuggestions: [] });
+        refreshStore();
+        announce('Profile deleted.');
+      }
+    };
+  }
 
   controls.querySelector('#profile-select').onchange = (e) => {
     const profileId = e.target.value;
@@ -161,9 +190,40 @@ function render() {
     }
   };
 
+  const searchInput = controls.querySelector('#search-input');
+  searchInput.oninput = (e) => {
+    Store.setState({ searchQuery: e.target.value });
+  };
+  // Focus at the end of text
+  if (document.activeElement.id === 'search-input') {
+    searchInput.focus();
+    searchInput.setSelectionRange(searchQuery.length, searchQuery.length);
+  }
+
+  // Filter albums
+  const filteredAlbums = albums.filter(a => 
+    a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.date_key.includes(searchQuery)
+  );
+
   // Main Grid
-  const gridContainer = renderVirtualGrid(appRoot, albums, photosByAlbumId || {});
+  const gridContainer = renderVirtualGrid(appRoot, filteredAlbums, photosByAlbumId || {});
   
+  gridContainer.onclick = (e) => {
+    const deleteBtn = e.target.closest('.btn-delete-album');
+    if (deleteBtn) {
+      e.stopPropagation();
+      const card = deleteBtn.closest('.album-card');
+      const albumId = card.dataset.id;
+      const album = albums.find(a => a.id == albumId);
+      if (confirm(`Delete album "${album.title}" and all its photos?`)) {
+        DatabaseService.deleteAlbum(albumId);
+        refreshStore();
+        announce(`Album "${album.title}" deleted.`);
+      }
+    }
+  };
+
   // Apply suggestions
   if (matchingSuggestions && matchingSuggestions.length > 0) {
     matchingSuggestions.forEach(s => {

@@ -1,0 +1,7 @@
+# Mark scripts and config as vendored or documentation so they don't count towards language stats
+.specify/** linguist-vendored
+.gemini/** linguist-vendored
+specs/** linguist-documentation
+tests/** linguist-documentation
+*.ps1 linguist-vendored
+*.toml linguist-vendored

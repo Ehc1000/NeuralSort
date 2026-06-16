@@ -5,6 +5,7 @@ let state = {
   photos: [],
   styleProfiles: [],
   activeProfile: null,
+  searchQuery: '',
   isInitializing: true,
   error: null
 };
